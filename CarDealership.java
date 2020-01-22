@@ -1,7 +1,9 @@
-//import packages
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.GregorianCalendar;
+import java.util.Random;
+import java.util.Iterator;
 
 /**
  * class CarDealership organizes car objects
@@ -21,11 +23,37 @@ public class CarDealership
 	private boolean price = false;
 	
 	/**
-	 * two array lists used for stacking filter options
+	 * two array lists used for stacking filter options for the car list
 	 */
 	private ArrayList<Car> listOfCars;
 	private ArrayList<Car> filteredListOfCars;
 	
+	
+	/**
+	 * accountingSystem: Accounting system object
+	 * salesTeam: Sales team object
+	 */
+	private AccountingSystem accountingSystem = new AccountingSystem();
+	private SalesTeam salesTeam = new SalesTeam();
+	
+	
+	/**
+	 * gets the accounting system
+	 * @return accounting system
+	 */
+	public AccountingSystem getAccountingSystem()
+	{
+		return accountingSystem;
+	}
+	
+	/**
+	 * gets the sales team list
+	 * @return sales team list
+	 */
+	public SalesTeam getSalesTeam()
+	{
+		return salesTeam;
+	}
 	
 	//CarDealership Constructor
 	CarDealership()
@@ -74,32 +102,91 @@ public class CarDealership
 	}
 	
 	/**
-	 * Removes car object from CarDealership
-	 * @param index Indicates the specific car to retrieve from the ArrayList based on the index number
-	 * @return Car that was purchased or null object
+	 * Iterates through the list of car objects and checks if the VIN entered is in the list of cars.  
+	 * If there's a match, store car object in purchasedCar and remove the same car object from the list
+	 * @param VIN car identification number
+	 * @return car object that was bought and removes it from the list of cars
 	 */
-	public Car buyCar(int index)
+	public String buyCar(int VIN)
 	{
-
-		if (index < listOfCars.size())
+		Iterator<Car> carObjectIterator = listOfCars.iterator();
+		Car purchasedCar = null;
+		
+		while (carObjectIterator.hasNext())
 		{
-			return listOfCars.remove(index);	
+			Car eachCar = carObjectIterator.next();
+			if (eachCar.getVIN() == VIN)
+			{
+				purchasedCar = eachCar;
+				carObjectIterator.remove();
+			}
 		}
-		else
+		
+		//String that stores random sales person name
+		String randomSalesPerson = salesTeam.randomSalesPerson();
+		
+		//generates random month and random day and stores it into variables
+		Random randomM = new Random();
+		int randomMonth = randomM.nextInt(12) + 1;
+		Random randomD = new Random();
+		int randomDay = randomD.nextInt(31) + 1;		
+		
+		//date: Gregorian Calendar object
+		GregorianCalendar date = new GregorianCalendar();
+		
+		// makes sure the random day generated is appropriate for the month generated
+		//return adds a new transaction into accounting system
+		if (randomMonth == 2 && randomDay > 28)
 		{
-			return null;
+			randomDay -= 3;
 		}
+		else if ((randomMonth % 2 == 0 && randomMonth != 8) && (randomDay > 30))
+		{
+			randomDay -= 1;
+		}
+		date = new GregorianCalendar(2019, randomMonth, randomDay); 
+		return accountingSystem.add(date, purchasedCar, randomSalesPerson, "BUY", purchasedCar.getPrice());
 	}
 	
+//	/**
+//	 * Returns car object to CarDealership
+//	 * @param car If car was previously bought than car object returned to CarDealership
+//	 */
+	
+	
 	/**
-	 * Returns car object to CarDealership
-	 * @param car if car was previously bought than car object returned to CarDealership
+	 * @param transactionID takes in the randomly generated transaction ID
+	 * -1 indicates that there is no car transaction available for return
+	 * If the transaction is not -1 then there is a car transaction available for return 
+	 * New transaction id is generated, a new day within the same month is generated (day is after the bought car date) and the type of transaction is changed to RET
+	 * The returned car displays the transaction information with the new data generated
+	 * 
 	 */
-	public void returnCar(Car car)
+	public void returnCar(int transactionID)
 	{
-		if (car != null)
+		if (transactionID != -1)
 		{
-		listOfCars.add(car);
+			
+		Transaction tempTransaction = accountingSystem.getTransaction(transactionID);
+		listOfCars.add(tempTransaction.getSpecificCar());
+		
+		GregorianCalendar transactionDate = tempTransaction.getDateOfTransaction();
+		
+		int transactionDay = transactionDate.get(transactionDate.DAY_OF_MONTH);
+		
+		Random randomD = new Random();
+		int randomDay = randomD.nextInt(30 - transactionDay) + transactionDay;
+		
+		transactionDate.set(transactionDate.DAY_OF_MONTH, randomDay);
+		String salesPName = tempTransaction.getSalesPersonName();
+		Car returnedCar = tempTransaction.getSpecificCar();
+		double returnedSalePrice = tempTransaction.getSalePrice();
+			
+		Transaction returnTransaction = new Transaction(transactionDate, "RET", salesPName, returnedCar, returnedSalePrice);
+		
+		accountingSystem.getListOfTransactions().put(returnTransaction.getID(), returnTransaction);
+		
+		System.out.println(returnTransaction.display());
 		}
 	}
 	
@@ -116,7 +203,7 @@ public class CarDealership
 				Car car = filteredListOfCars.get(index);
 				if (listOfCars.indexOf(car) >= 0)
 				{
-					System.out.println(listOfCars.indexOf(car) + " " + car.display());
+					System.out.println(car.display());
 				}
 			}
 		}
@@ -124,7 +211,7 @@ public class CarDealership
 		{
 			for (int index = 0; index < listOfCars.size(); index++)
 			{
-				System.out.println(index + " " + listOfCars.get(index).display());	
+				System.out.println(listOfCars.get(index).display());	
 			}
 		}
 

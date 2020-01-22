@@ -1,58 +1,44 @@
-//import packages
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Scanner;
 import java.util.NoSuchElementException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
 
+/**
+ * Simulates car dealership
+ * @author Mabel
+ *
+ */
 public class CarDealershipSimulator 
 {
-  public static void main(String[] args)
+public static void main(String[] args)
   {
 	  // Create a CarDealership object
 	  CarDealership CD = new CarDealership(); 
 	  
-	  // Then create an (initially empty) array list of type Car
-	  ArrayList<Car> carList = new ArrayList<Car>();
+	  // Create a file reader and then create an (initially empty) array list of type Car
+	  FileReader reader = new FileReader();
 
-	  // Then create some new car objects of different types
-	  // See the cars file for car object details
-	  Car toyota = new Car("Toyota", "blue", Car.SEDAN, Car.GAS_ENGINE, 9.5, 500, false, 25000, 4);
-	  Car honda = new Car("Honda", "red", Car.SPORTS, Car.GAS_ENGINE, 9.2, 450, false, 30000, 4);
-	  Car kia = new Car("Kia", "white", Car.MINIVAN, Car.GAS_ENGINE, 9.7, 550, false, 20000, 4);
-	  Car bmw = new Car("BMW", "black", Car.SEDAN, Car.GAS_ENGINE, 9.6, 600, true, 55000, 4);
-	  ElectricCar telsa = new ElectricCar("Tesla", "red", Car.SEDAN, Car.ELECTRIC_MOTOR, 9.1, 425, true, 85000, 4, 30, "Lithium");
-	  Car chevy = new Car("Chevy", "red", Car.MINIVAN, Car.GAS_ENGINE, 9.25, 475, false, 40000, 4);
-	  ElectricCar chevyvolt = new ElectricCar("ChevyVolt", "green", Car.SEDAN, Car.ELECTRIC_MOTOR, 8.9, 375, true, 37000, 4, 45, "Lithium");
-	  Car bentley = new Car("Bentley", "black", Car.SEDAN, Car.GAS_ENGINE, 9.8, 575, false, 150000, 4);
-	  ElectricCar nissanleaf = new ElectricCar("NissanLeaf", "green", Car.SEDAN, Car.ELECTRIC_MOTOR, 8.8, 325, true, 32000, 4, 55, "Lithium");
-	  
-	  // Add the car objects to the array list
-	  carList.add(toyota);
-	  carList.add(honda);
-	  carList.add(kia);
-	  carList.add(bmw);
-	  carList.add(telsa);
-	  carList.add(chevy);
-	  carList.add(chevyvolt);
-	  carList.add(bentley);
-	  carList.add(nissanleaf);
-	  
-    		  
-	  // The ADD command should hand this array list to CarDealership object via the addCars() method	  
-	  // Create a scanner object 
-	  // while the scanner has another line
-	  //    read the input line
-	  //    create another scanner object (call it "commandLine" or something) using the input line instead of System.in
-	  //    read the next word from the commandLine scanner 
-      //	check if the word (i.e. string) is equal to one of the commands and if so, call the appropriate method via the CarDealership object  
-	  //String commandLine = scanner.nextInt();	 
-	 
+	  ArrayList<Car> carList = reader.getScannedCars();
+
+	  if (carList.isEmpty()) {
+
+		  System.out.println("Failed to load data.");
+
+		  return;
+
+	  }
+	   
 	  /**
 	   * Scanner object to detect user input
-	   * temp variable used to indicate whether customer has bought a car from CarDealership
+	   * boughtCarTransactionID: variable used to indicate whether customer has bought a car from CarDealership
 	   */
 	  Scanner scanner = new Scanner(System.in);
-	  Car temp = null;
+	  int boughtCarTransactionID = -1;
 	 
 	  /**
 	   * First while loop checks input line and assign it to String variable commandInput
@@ -75,7 +61,7 @@ public class CarDealershipSimulator
 			 {
 			 
 			 /**
-			  * If user enters "L" check if ArrayListin CarDealership object is empty, if empty equals true than print statement, otherwise display inventory
+			  * If user enters "L" check if ArrayList in CarDealership object is empty, if empty equals true than print statement, otherwise display inventory
 			  */
 			 case "L":
 				 if (CD.isListEmpty() == true)
@@ -100,16 +86,15 @@ public class CarDealershipSimulator
 			
 			/**
 			 * If user enters "BUY" check if ArrayList in CarDealership object is empty, if empty equals true than print statement
-			 * else: try and check if there is an integer in the input line after BUY. e.g. BUY 3
+			 * else: checks if there is an integer in the input line after BUY. e.g. BUY 3 
+			 * Takes the car object that's being purchased and put it into a String
+			 * Takes the transaction number after "ID:" from the string and store the bought car transaction into boughtCarTransactionID variable
+			 * 
 			 * catch NoSuchElementException error if BUY is missing integer parameters
 			 * catch IndexOutOfBoundsException error when integer value entered is negative. e.g BUY -1
-			 * 
-			 * if (boughtCar! null): The check for an integer in the input line will also be assigned to a boughtCar variable to check if bought Car is null.  
-			 * This is to prevent the broughtCar stored in the system to be erased when user tries to buy a car number that is bigger than the existing list.  
-			 * e.g. Cars inventory are listed from 0 to 7.  User buys car 7 with 'BUY 7' command and car 7 info is stored in the temp variable for if customer wants to return the car, they can.  (Unless another car existing in the inventory is bought than it overrides car 7 info)
-			 * However, if car 7 is stored in the temp variable and user enters 'BUY 10' which car does not exist in the inventory than temp will be set to null.
-			 * Checking whether boughtCar is Null will prevent the temp variable to be set to null if user tries to buy a car that does not exist in the inventory so the previous car
-			 * can still be returned.
+			 * catch NullPointException error
+			 * catch NumberFOrmatException error if symbols are entered after BUY. e.g. BUY %$#& or BUY 6$
+			 *
 			 */ 
 			 case "BUY":
 				 
@@ -120,12 +105,21 @@ public class CarDealershipSimulator
 				 else
 				 {	 
 					 try
-					 {
-						 Car boughtCar = CD.buyCar(Integer.parseInt(commandLine.next())); 
-						 if (boughtCar != null) 
+					 {				 
+						 String purchasedCar = CD.buyCar(Integer.parseInt(commandLine.next()));
+						 Scanner purchasedCarScanner = new Scanner(purchasedCar);
+						 
+						 while (purchasedCarScanner.hasNext())
 						 {
-							 temp = boughtCar;
+							 String purchasedCarDetails = purchasedCarScanner.next();
+							 if (purchasedCarDetails.equals("ID:"))
+							 {
+								 boughtCarTransactionID = Integer.parseInt(purchasedCarScanner.next());
+								 break;
+							 }
 						 }
+						 System.out.println(purchasedCar);
+						 purchasedCarScanner.close();
 					 }
 					 catch (NoSuchElementException error)
 					 {
@@ -135,26 +129,281 @@ public class CarDealershipSimulator
 					 {
 						 System.out.println("Invalid entry.  Please try again.");
 					 }
+					 catch (NullPointerException error)
+					 {
+						 System.out.println("Invalid entry.  Please try again.");
+					 }
+					 catch (NumberFormatException error)
+					 {
+						 System.out.println("Invalid entry.  Please try again.");
+					 }
 				 }
 
 				 break;
 				 
 			/**
-			 * check if a car was previously bought by checking the car bought in the temp variable.  If temp variable is null then print statement.
-			 * Otherwise return the car that was previously bought and set temp variable to null. 
+			 * -1 means there is no car transaction information stored in bougthCarTransactionID
+			 * check if a car was previously bought by checking the car bought in the boughtCarTransactionID variable.  
+			 * If temp variable is -1 then print statement.
+			 * Otherwise return the car that was previously bought and set boughtCarTransactionID variable to -1. 
 			 */
 			 case "RET": 
-				 if (temp == null)
+				 if (boughtCarTransactionID == -1)
 				 {
 					 System.out.println("No car to return.");
 				 }
 				 else
 				 {
-				 CD.returnCar(temp);
-				 temp = null;
+				 CD.returnCar(boughtCarTransactionID);
+				 boughtCarTransactionID = -1;
 				 }
 				 break;
 			
+			/**
+			 * if command does not have a next token after SALES than go through the list of transactions and print them all
+			 * if there is a token after SALES there is a switch for specific inputs
+			 * anything outside of these defined inputs will print a statement indicating that it is invalid	 			 
+			 */
+			case "SALES":
+				if (!commandLine.hasNext()) 
+				{
+					HashMap<Integer, Transaction> allTransactions = CD.getAccountingSystem().getListOfTransactions();
+					 
+					for (Map.Entry<Integer, Transaction> entry: allTransactions.entrySet())
+					{
+						System.out.println(entry.getValue().display());
+					}	
+				} 
+				
+				else
+				{
+					String nextCommand = commandLine.next().toUpperCase();
+					
+					switch (nextCommand)
+					{	
+					
+					/**
+					 * if command is SALES TEAM, print out the sales team list
+					 */
+					case "TEAM":
+						System.out.println(CD.getSalesTeam().getSalesTeamList());
+						break;
+					
+					/**
+					 * if command is SALES TOPSP then print out the top sales person
+					 * takes the sales persons name from the transactions and put them into a HashMap
+					 */
+					case "TOPSP":
+						
+						HashMap<Integer, Transaction> allTransactions = CD.getAccountingSystem().getListOfTransactions();
+						String individualSalesName = "";
+						Map<String, Integer> carsSoldByEachSalesPerson = new HashMap<String, Integer>();
+						
+						
+						for (Map.Entry<Integer, Transaction> entry: allTransactions.entrySet())
+						{
+							individualSalesName = entry.getValue().getSalesPersonName();
+							Integer counter = carsSoldByEachSalesPerson.get(individualSalesName);
+							
+							if (counter == null)
+							{
+								counter = 0;
+							}
+							if (counter != null)
+							{
+								counter++;
+							}
+							carsSoldByEachSalesPerson.put(individualSalesName, counter);
+						}
+						
+						
+						/**
+						 * Checks if there are multiple top sales person
+						 */
+						int topSales = 0;
+						String topSalesPerson = "";						
+
+						for (String key: carsSoldByEachSalesPerson.keySet())
+						{			
+							if (carsSoldByEachSalesPerson.get(key) > topSales)
+							{	
+								topSales = carsSoldByEachSalesPerson.get(key);
+								topSalesPerson = key;
+							}
+							if (carsSoldByEachSalesPerson.get(key) == topSales)
+							{
+								if (topSalesPerson.equals(key))
+								{
+									topSalesPerson = "\n" + key;
+								}
+								else
+								{
+									topSalesPerson = topSalesPerson + "\n" + key;
+								}
+							}	 
+						}
+						System.out.println(topSalesPerson + "\n" + topSales);
+						break;
+										
+
+					/**
+					 * First for loop goes through all transactions and calculates the average total sales, total cars sold and total cars returned
+					 * total $ sales will reduce if any cars are returned
+					 * total number of cars sold and total return cars does not change
+					 * 
+					 * Second for loop and latter half calculates and prints the monthly figures 
+					 * if there are transactions happening within that month and the month with most sales 
+					 * 					 
+					 */
+					case "STATS":
+						
+						HashMap<Integer, Transaction> allTransaction = CD.getAccountingSystem().getListOfTransactions();
+						HashMap<Integer, Double> monthlyTotals = new HashMap<Integer, Double>();
+						HashMap<Integer, Integer> monthlyQuantities = new HashMap<Integer, Integer>();
+						HashMap<Integer, Double> returnMonthlyTotals = new HashMap<Integer, Double>();
+						HashMap<Integer, Integer> returnMonthlyQuantities = new HashMap<Integer, Integer>();
+						
+						int totalSales = 0;
+						double totalValueSold = 0;
+						int totalReturned = 0;
+						
+						for (Map.Entry<Integer, Transaction> entry: allTransaction.entrySet())
+						{
+							Transaction trans = entry.getValue();
+							int transactionMonth = trans.getDateOfTransaction().get(Calendar.MONTH);
+							
+							if (trans.getTypeOfTransaction() == "BUY")
+							{
+								totalValueSold += trans.getSalePrice();
+								totalSales ++;
+								
+								//monthly sales prices
+								if (monthlyTotals.get(transactionMonth) == null)
+								{
+									monthlyTotals.put(transactionMonth, trans.getSalePrice());
+								}
+								else
+								{
+									monthlyTotals.put(transactionMonth, monthlyTotals.get(transactionMonth) + trans.getSalePrice());
+								}
+								
+								//monthly sales
+								if (monthlyQuantities.get(transactionMonth) == null)
+								{
+									monthlyQuantities.put(transactionMonth, 1);
+								}
+								else
+								{
+									monthlyQuantities.put(transactionMonth, monthlyQuantities.get(transactionMonth) + 1);
+								}
+							}
+							else
+							{
+								//monthly sales prices
+								if (returnMonthlyTotals.get(transactionMonth) == null)
+								{
+									returnMonthlyTotals.put(transactionMonth, trans.getSalePrice());
+								}
+								else
+								{
+									returnMonthlyTotals.put(transactionMonth, returnMonthlyTotals.get(transactionMonth) + trans.getSalePrice());
+								}
+								
+								//monthly sales
+								if (returnMonthlyQuantities.get(transactionMonth) == null)
+								{
+									returnMonthlyQuantities.put(transactionMonth, 1);
+								}
+								else
+								{
+									returnMonthlyQuantities.put(transactionMonth, returnMonthlyQuantities.get(transactionMonth) + 1);
+								}
+								
+								totalValueSold -= trans.getSalePrice();
+								totalReturned ++;
+							}
+						}
+						
+						System.out.println("Total Sales (2019): " + totalValueSold + 
+								"\nTotal Cars sold (2019): " + totalSales +
+								"\nTotal Cars returned: " + totalReturned + "\n\nMonthly figures: \n");
+						
+						int highestSales= 0;
+						int highestSalesMonth = 0;
+						
+						for (Map.Entry<Integer, Double> entry: monthlyTotals.entrySet())
+						{
+							int quantity = monthlyQuantities.get(entry.getKey());
+							
+							if (quantity > highestSales)
+							{
+								highestSales = quantity;
+								highestSalesMonth = entry.getKey();
+							}
+							
+							double adjustedTotal = entry.getValue();
+							double adjustedQuantity = quantity;
+							
+							if (returnMonthlyTotals.get(entry.getKey()) != null)
+							{
+								adjustedTotal -= returnMonthlyTotals.get(entry.getKey());
+								adjustedQuantity -=returnMonthlyQuantities.get(entry.getKey());
+							}
+							
+							String output = "0";
+							
+							if (adjustedQuantity > 0) 
+							{
+								output = Double.toString(adjustedTotal / adjustedQuantity);
+							}
+							
+							Double.toString(adjustedTotal / adjustedQuantity);
+							System.out.println("Month: " + entry.getKey() + " Average sales: " + output);
+						}
+						
+						System.out.println("Highest sales month (in terms of # cars): " + highestSalesMonth);
+						
+						break;
+							
+					 
+					default:
+						try 
+						{
+							int month = Integer.parseInt(nextCommand);
+							if (month < 0 || month > 11)
+							{
+								System.out.println("Not a valid month");
+								break;
+							}
+							
+							HashMap<Integer, Transaction> allTrans = CD.getAccountingSystem().getListOfTransactions();
+							String ret = "";
+							for (Map.Entry<Integer, Transaction> entry: allTrans.entrySet())
+							{
+								if (entry.getValue().getDateOfTransaction().get(Calendar.MONTH) == month) 
+								{
+									ret += entry.getValue().display() + "\n";
+								}
+							}
+							if (ret == "")
+							{
+								System.out.println("No sales that month");
+							}
+							else 
+							{
+								System.out.println(ret);
+							}
+							
+						}
+						
+						catch (NumberFormatException error) 
+						{
+							System.out.println("Not a valid entry.");
+						}
+					}
+				}		
+				break;
+	
 			/**
 			 * add list of cars into ArrayList of CarDealership object
 			 */
