@@ -1,3 +1,5 @@
+import java.util.Random;
+
 /**
  * This class instantiates Vehicle objects
  * @author Mabel
@@ -6,7 +8,7 @@
 public class Vehicle 
 {
 	/**
-	 * Creating static string constants for Vehnicle's power type.
+	 * Creates static string constants for Vehicle's power type.
 	 */
 	public static final int ELECTRIC_MOTOR = 0;
 	public static final int GAS_ENGINE = 1;
@@ -17,11 +19,13 @@ public class Vehicle
 	 * color: Holds the color of the vehicle
 	 * power: Holds the power the Vehicle uses, i.e. Gas or Electric
 	 * numWheels: Holds the number of wheels the vehicle has
+	 * VIN: Holds the Vehicle Identification number
 	 */
 	private String mfr;
 	private String color;
 	private int power;
 	private int numWheels;
+	private int VIN;
 
 	/**
 	 * 
@@ -29,6 +33,7 @@ public class Vehicle
 	 * @param color Vehicle's color
 	 * @param power Power vehicle uses, Gas or Electric (Static string constant)
 	 * @param numWheels Number of wheels vehicle has
+	 * VIN: Vehicle Identification number is randomly generated every time class Vehicle instantiates, therefore no param required in Vehicle constructor.
 	 */
 	Vehicle(String mfr, String color, int power, int numWheels)
 	{
@@ -36,6 +41,9 @@ public class Vehicle
 		this.color = color;
 		this.power = power;
 		this.numWheels = numWheels;
+		
+		Random randomVIN = new Random();
+		this.VIN = randomVIN.nextInt(400) + 100;
 	}
 	
 	/**
@@ -103,6 +111,18 @@ public class Vehicle
 		this.numWheels = numWheels;
 	}
 	
+	
+	/**
+	 * Gets the randomly generated VIN number of the vehicle
+	 * @return vehicle identification number
+	 */
+	public int getVIN()
+	{
+		return VIN;
+	}
+
+//	did not create setter for VIN since the vehicle id will be randomly generated when vehicle object is created
+	
 	/**
 	 * Compares this vehicle with other vehicle and see whether they are equal
 	 * Returns true if they are equal and returns false if not equal
@@ -128,7 +148,7 @@ public class Vehicle
 	 */
 	public String display()
 	{
-		return mfr + " " + color;
+		return "VIN: " + VIN + " " + mfr + " " + color;
 	}
 }
 

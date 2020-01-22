@@ -1,3 +1,4 @@
+
 /**
  * This class instantiate ElectricCar objects.  Child class of class Car.  
  * @author Mabel
