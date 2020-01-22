@@ -6,7 +6,7 @@
 public class Car extends Vehicle implements Comparable<Car>
 {
 	/**
-	 * Creating static string constants for car models.
+	 * Creates static string constants for car models.
 	 */
 	public static final int SEDAN = 0;
 	public static final int SUV = 1;
@@ -19,7 +19,7 @@ public class Car extends Vehicle implements Comparable<Car>
 	 * maxRange: Holds the car's max range it can travel
 	 * safetyRating: Holds the car's safety rating
 	 * AWD:  Holds a boolean checking if the car is all-wheel drive
-	 * price: Hold the price of the car
+	 * price: Holds the price of the car
 	 */
 	private int model;
 	private int maxRange;
